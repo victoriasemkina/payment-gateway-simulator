@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 # Импортируем все классы из доменного слоя
-from src.payment_gateway.domain import (
+from src.payment_gateway_simulator.domain import (
     PaymentStatus,
     PaymentId,
     Amount,

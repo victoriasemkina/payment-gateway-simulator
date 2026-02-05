@@ -30,7 +30,7 @@
 
 1. Клонируем репозиторий
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/payment-gateway-simulator.git
+git clone https://github.com/victoriasemkina/payment-gateway-simulator.git
 cd payment-gateway-simulator
 ```
 2. Устанавливаем Python 3.10+ и Poetry (см. ниже)
@@ -40,6 +40,58 @@ poetry install
 ```
 4. Запускаем API-сервер
 ```bash
-poetry run uvicorn src.payment_gateway.api.main:app --reload
+uvicorn src.payment_gateway_simulator.api.main:app --reload --port 8000
 ```
-5. Открываем `http://localhost:8000/docs` — видим Swagger UI
+
+✅ Проверка в браузере:
+- http://127.0.0.1:8000/health
+- http://127.0.0.1:8000/docs (Swagger UI)
+
+## 🧪 Запуск тестов
+- Юнит-тесты (быстрые, без сети)
+```powershell
+pytest tests/unit/ -v
+```
+✅ Ожидаемый результат: 36 зелёных тестов
+
+- Интеграционные тесты (через HTTP)
+1. Сначала запусти сервер (в отдельном терминале):
+```powershell
+uvicorn src.payment_gateway_simulator.api.main:app --port 8000
+```
+2. Затем запусти тесты (во втором терминале):
+```powershell
+pytest tests/integration/ -v
+```
+✅ Ожидаемый результат: 6 зелёных тестов
+
+## ⚠️ Решение проблем на Windows
+### Проблема: Таймауты при вызове сервера (httpx.ReadTimeout)
+Симптомы:
+```text
+httpx.ReadTimeout: timed out
+FAILED tests/integration/test_api.py::TestPaymentApi::test_health_check - Failed: ...
+```
+Причина:
+Порт 8000 занят "зомби"-процессами от предыдущих запусков с --reload.
+
+Решение:
+1. Найди процессы, занимающие порт 8000:
+```
+netstat -ano | findstr :8000
+```
+2. Убей зависшие процессы (заменяй PID на актуальные):
+```commandline
+taskkill /PID 11216 /F
+```
+3. Если не помогает — убей все процессы Python:
+```commandline
+taskkill /IM python.exe /F
+```
+4. Перезапусти сервер БЕЗ `--reload`:
+```commandline
+uvicorn src.payment_gateway_simulator.api.main:app --port 8000
+```
+
+### Проблема: localhost не работает
+Решение: Используй `127.0.0.1` вместо `localhost` везде (в коде и браузере).
